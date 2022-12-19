@@ -6,7 +6,7 @@
 parameters:
   - name: buildConfiguration
     type: string
-    default: 'Release'
+    default: 'Debug'
     values:
       - 'Release'
       - 'Debug'
@@ -22,8 +22,6 @@ variables:
   - name: verbosityRestore
     value: 'Detailed'
   - name: vstsFeed
-    value: ''
-  - name: azureSubscription
     value: ''
 
 
@@ -80,7 +78,7 @@ stages:
             enabled: true
             inputs:
               command: 'test'
-              projects: '**/*Tests.csproj'
+              projects: '${{ variables.pathToTest }}'
 
           # DotNet Publish
           - task: DotNetCoreCLI@2
