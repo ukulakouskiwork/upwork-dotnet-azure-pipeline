@@ -1,0 +1,99 @@
+# ASP.NET Core (.NET Framework)
+# Build and test ASP.NET Core projects targeting the full .NET Framework.
+# Add steps that publish symbols, save build artifacts, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+parameters:
+  - name: buildConfiguration
+    type: string
+    default: 'Release'
+    values:
+      - 'Release'
+      - 'Debug'
+
+
+variables:
+  - name: solution
+    value: '**/*.sln'
+  - name: pathToTest
+    value: '**/*Tests.csproj'
+  - name: pathToPublish
+    value: '$(Build.ArtifactStagingDirectory)'
+  - name: verbosityRestore
+    value: 'Detailed'
+  - name: vstsFeed
+    value: ''
+  - name: azureSubscription
+    value: ''
+
+
+
+pool:
+  vmImage: 'windows-latest'
+
+
+stages:
+  - stage: CI
+    displayName: Build and Test app
+    jobs:
+      - job:
+        steps:
+          - checkout: self
+
+          - task: NuGetToolInstaller@1
+            displayName: 'NuGet: Install NuGet tool'
+
+          - task: NuGetAuthenticate@0
+            displayName: 'NuGet: Install NuGet credprovider'
+
+          - task: NuGetCommand@2
+            inputs:
+              command: 'restore'
+              restoreSolution: '${{ variables.solution }}'
+              feedsToUse: 'select'
+              vstsFeed: '${{ variables.vstsFeed }}'
+
+
+          # DotNet NuGet restore
+          - task: DotNetCoreCLI@2
+            displayName: 'DotNetCore: Restore packages from ${{ variables.vstsFeed }} for ${{ variables.solution }}'
+            enabled: true
+            inputs:
+              command: restore
+              projects: ${{ variables.solution }}
+              feedsToUse: 'select'
+              vstsFeed: '${{ variables.vstsFeed }}'
+              includeNuGetOrg: true
+              verbosityRestore: '${{ variables.verbosityRestore }}'
+
+          # DotNet build
+          - task: DotNetCoreCLI@2
+            displayName: 'DotNetCore: Build ${{ variables.solution }}'
+            enabled: true
+            inputs:
+              command: 'build'
+              projects: ${{ variables.solution }}
+              arguments: '-o $(Build.ArtifactStagingDirectory) --no-restore -c ${{ parameters.buildConfiguration }}'
+
+          - task: DotNetCoreCLI@2
+            displayName: 'DotNetCore: Test App'
+            enabled: true
+            inputs:
+              command: 'test'
+              projects: '**/*Tests.csproj'
+
+          # DotNet Publish
+          - task: DotNetCoreCLI@2
+            displayName: 'DotNetCore: Publish solution files'
+            enabled: true
+            inputs:
+              command: 'publish'
+              publishWebProjects: false
+              zipAfterPublish: false
+              projects: ${{ variables.solution }}
+              arguments: '-o ${{ variables.pathToPublish }} --no-restore -c ${{ parameters.buildConfiguration }}'
+
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish build artifacts'
+            inputs:
+              ArtifactName: $(Build.Repository.Name)
