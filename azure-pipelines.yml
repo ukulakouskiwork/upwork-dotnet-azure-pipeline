@@ -1,34 +1,65 @@
-# ASP.NET Core (.NET Framework)
-# Build and test ASP.NET Core projects targeting the full .NET Framework.
-# Add steps that publish symbols, save build artifacts, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
-
 parameters:
   - name: buildConfiguration
     type: string
-    default: 'Debug'
+    default: 'Release'
     values:
       - 'Release'
       - 'Debug'
+
+  - name: URL_TO_NEXUS_SERVER
+    type: string
+    default: ''
+  - name: NEXUS_REPOSITORY_NAME
+    type: string
+    default: ''
+  - name: LOGIN_AND_PASSWORD_BASE64
+    type: string
+    default: ''
+  - name: DIR_NAME
+    type: string
+    default: ''
+  - name: PATH_TO_FILE
+    type: string
+    default: ''
+  - name: FILE_NAME_IN_NEXUS_REPO
+    type: string
+
+  - name: checkmarxTenantName
+    type: string
+    default: ''
+  - name: checkmarxService
+    type: string
+    default: 'Checkmarx_AST-ESRI-DevSecOps'
+  - name: qualysWasService
+    type: string
+    default: ''
+  - name: qualyswebApplication
+    type: string
+    default: ''
+  - name: qualysScanType
+    type: string
+    default: 'VULNERABILITY'
+  - name: qualysDataCheckFrequency
+    type: string
+    default : '5'
+  - name: qualysWaitTimeforScanResult
+    type: string
+    default : '60*24'
 
 
 variables:
   - name: solution
     value: '**/*.sln'
   - name: pathToTest
-    value: '**/*Tests.csproj'
+    value: '**/*Helloworld.csproj'
   - name: pathToPublish
     value: '$(Build.ArtifactStagingDirectory)'
   - name: verbosityRestore
     value: 'Detailed'
-  - name: vstsFeed
-    value: ''
-
 
 
 pool:
   vmImage: 'windows-latest'
-
 
 stages:
   - stage: CI
@@ -49,18 +80,16 @@ stages:
               command: 'restore'
               restoreSolution: '${{ variables.solution }}'
               feedsToUse: 'select'
-              vstsFeed: '${{ variables.vstsFeed }}'
 
 
           # DotNet NuGet restore
           - task: DotNetCoreCLI@2
-            displayName: 'DotNetCore: Restore packages from ${{ variables.vstsFeed }} for ${{ variables.solution }}'
+            displayName: 'DotNetCore: Restore packages for ${{ variables.solution }}'
             enabled: true
             inputs:
               command: restore
               projects: ${{ variables.solution }}
               feedsToUse: 'select'
-              vstsFeed: '${{ variables.vstsFeed }}'
               includeNuGetOrg: true
               verbosityRestore: '${{ variables.verbosityRestore }}'
 
@@ -78,7 +107,19 @@ stages:
             enabled: true
             inputs:
               command: 'test'
-              projects: '${{ variables.pathToTest }}'
+              projects: '**/*Tests.csproj'
+
+
+          - template: ./template-sast-dast-tool.yml
+            parameters:
+              checkmarxTenantName:
+              checkmarxService:
+              qualysWasService:
+              qualyswebApplication:
+              qualysScanType:
+              qualysDataCheckFrequency:
+              qualysWaitTimeforScanResult:
+
 
           # DotNet Publish
           - task: DotNetCoreCLI@2
@@ -95,3 +136,14 @@ stages:
             displayName: 'Publish build artifacts'
             inputs:
               ArtifactName: $(Build.Repository.Name)
+              targetPath: '${{variables.pathToPublish}}'
+
+          - template: ./template-upload-artifact-nexus.yml
+            parameters:
+              URL_TO_NEXUS_SERVER: ${{ parameters.URL_TO_NEXUS_SERVER }}
+              NEXUS_REPOSITORY_NAME: ${{ parameters.NEXUS_REPOSITORY_NAME }}
+              LOGIN_AND_PASSWORD_BASE64: ${{ parameters.LOGIN_AND_PASSWORD_BASE64 }}
+              DIR_NAME: ${{ parameters.DIR_NAME }}
+              PATH_TO_FILE: ${{ parameters.PATH_TO_FILE }}
+              FILE_NAME_IN_NEXUS_REPO: ${{ parameters.FILE_NAME_IN_NEXUS_REPO }}
+              pathToPublish: ${{ variables.pathToPublish }}

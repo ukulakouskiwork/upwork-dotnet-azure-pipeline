@@ -1,0 +1,37 @@
+parameters:
+  - name: checkmarxTenantName
+    type: string
+  - name: checkmarxService
+    type: string
+    default: 'Checkmarx_AST-ESRI-DevSecOps'
+  - name: qualysWasService
+    type: string
+  - name: qualyswebApplication
+    type: string
+  - name: qualysScanType
+    type: string
+    default: 'VULNERABILITY'
+  - name: qualysDataCheckFrequency
+    type: string
+    default : '5'
+  - name: qualysWaitTimeforScanResult
+    type: string
+    default : '60*24'
+
+steps:
+  - task: Checkmarx AST@2
+    inputs:
+      CheckmarxService: ${{ parameters.checkmarxService }}
+      projectName: '$(Build.Repository.Name)'
+      branchName: '$(Build.SourceBranchName)'
+      tenantName: ${{ parameters.checkmarxTenantName }}
+
+  # Qualys ingtegration. Need install extension https://marketplace.visualstudio.com/items?itemName=Qualys-Inc.was-build-release-task&targetId=19ab32f4-7509-4afe-9407-88bc095b072f&utm_source=vstsproduct&utm_medium=ExtHubManageList
+  - task: QualysWASConnector@4
+    inputs:
+      WasService: ${{ parameters.qualysWasService }}
+      webApplication: ${{ parameters.qualyswebApplication }}
+      scanType: ${{ parameters.qualysScanType }}
+      dataCheckFrequency: ${{ parameters.qualysDataCheckFrequency }}
+      waitTimeforScanResult: ${{ parameters.qualysWaitTimeforScanResult }}
+
