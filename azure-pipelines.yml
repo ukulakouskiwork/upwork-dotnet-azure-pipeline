@@ -29,7 +29,7 @@ parameters:
     default: ''
   - name: checkmarxService
     type: string
-    default: 'Checkmarx_AST-ESRI-DevSecOps'
+    default: ''
   - name: qualysWasService
     type: string
     default: ''
