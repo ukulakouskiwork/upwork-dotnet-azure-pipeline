@@ -1,0 +1,27 @@
+parameters:
+  - name: CIArtifactName
+    type: string
+    default: "deploy-sources"
+
+
+steps:
+  - task: Bash@3
+    inputs:
+      targetType: 'inline'
+      script: |
+        # Write your commands here
+        curl -X 'GET' \
+                    '$URL_TO_NEXUS_SERVER/service/rest/v1/components?repository=$NEXUS_REPOSITORY_NAME' \
+                    -H 'accept: application/json' \
+                    -H 'Content-Type: multipart/form-data' \
+                    -H 'Authorization: Basic $LOGIN_AND_PASSWORD_BASE64' \
+                    -F 'raw.directory=$DIR_NAME' \
+                    -F 'raw.asset1=@$PATH_TO_FILE;type=application/x-zip-compressed' \
+                    -F 'raw.asset1.filename=$FILE_NAME_IN_NEXUS_REPO'
+      env:
+        URL_TO_NEXUS_SERVER: ${{ parameters.URL_TO_NEXUS_SERVER }}
+        NEXUS_REPOSITORY_NAME: ${{ parameters.NEXUS_REPOSITORY_NAME }}
+        LOGIN_AND_PASSWORD_BASE64: ${{ parameters.LOGIN_AND_PASSWORD_BASE64 }}
+        DIR_NAME: ${{ parameters.DIR_NAME }}
+        PATH_TO_FILE: ${{ parameters.PATH_TO_FILE }}
+        FILE_NAME_IN_NEXUS_REPO: ${{ parameters.FILE_NAME_IN_NEXUS_REPO }}

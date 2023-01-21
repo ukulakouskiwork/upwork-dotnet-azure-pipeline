@@ -1,0 +1,57 @@
+trigger: none
+pr: none
+
+resources:
+  pipelines:
+    - pipeline: <PIPELINE_NAME>
+      source: '<PIPELINE_NAME>'
+      trigger:
+        branches:
+          include:
+            - <branch>
+
+variables:
+
+stages:
+  - stage: Dev
+    displayName: "Deploy to DEV"
+    jobs:
+        timeoutInMinutes: 10
+        pool:
+          vmImage: windows-latest
+        environment: $(devEnvironmentName)
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - template: ./template-cd-steps.yml
+                  parameters:
+
+  - stage: QA
+    displayName: "Deploy to TEST"
+    jobs:
+        timeoutInMinutes: 10
+        pool:
+          vmImage: windows-latest
+        environment: $(testEnvironmentName)
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - template: ./template-cd-steps.yml
+                  parameters:
+
+
+  - stage: UAT
+    displayName: "Deploy to PROD"
+    jobs:
+        timeoutInMinutes: 10
+        pool:
+          vmImage: windows-latest
+        environment: $(testEnvironmentName)
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - template: ./template-cd-steps.yml
+                  parameters:
