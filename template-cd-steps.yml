@@ -1,7 +1,21 @@
 parameters:
-  - name: CIArtifactName
+  - name: URL_TO_NEXUS_SERVER
     type: string
-    default: "deploy-sources"
+    default: ''
+  - name: NEXUS_REPOSITORY_NAME
+    type: string
+    default: ''
+  - name: LOGIN_AND_PASSWORD_BASE64
+    type: string
+    default: ''
+  - name: DIR_NAME
+    type: string
+    default: ''
+  - name: PATH_TO_FILE
+    type: string
+    default: ''
+  - name: FILE_NAME_IN_NEXUS_REPO
+    type: string
 
 
 steps:

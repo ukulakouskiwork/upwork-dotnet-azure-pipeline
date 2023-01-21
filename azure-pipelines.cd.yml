@@ -1,6 +1,25 @@
 trigger: none
 pr: none
 
+parameters:
+  - name: URL_TO_NEXUS_SERVER
+    type: string
+    default: ''
+  - name: NEXUS_REPOSITORY_NAME
+    type: string
+    default: ''
+  - name: LOGIN_AND_PASSWORD_BASE64
+    type: string
+    default: ''
+  - name: DIR_NAME
+    type: string
+    default: ''
+  - name: PATH_TO_FILE
+    type: string
+    default: ''
+  - name: FILE_NAME_IN_NEXUS_REPO
+    type: string
+
 resources:
   pipelines:
     - pipeline: <PIPELINE_NAME>
@@ -26,7 +45,12 @@ stages:
               steps:
                 - template: ./template-cd-steps.yml
                   parameters:
-
+                    URL_TO_NEXUS_SERVER: ${{ parameters.URL_TO_NEXUS_SERVER }}
+                    NEXUS_REPOSITORY_NAME: ${{ parameters.NEXUS_REPOSITORY_NAME }}
+                    LOGIN_AND_PASSWORD_BASE64: ${{ parameters.LOGIN_AND_PASSWORD_BASE64 }}
+                    DIR_NAME: ${{ parameters.DIR_NAME }}
+                    PATH_TO_FILE: ${{ parameters.PATH_TO_FILE }}
+                    FILE_NAME_IN_NEXUS_REPO: ${{ parameters.FILE_NAME_IN_NEXUS_REPO }}
   - stage: QA
     displayName: "Deploy to TEST"
     jobs:
@@ -40,7 +64,12 @@ stages:
               steps:
                 - template: ./template-cd-steps.yml
                   parameters:
-
+                    URL_TO_NEXUS_SERVER: ${{ parameters.URL_TO_NEXUS_SERVER }}
+                    NEXUS_REPOSITORY_NAME: ${{ parameters.NEXUS_REPOSITORY_NAME }}
+                    LOGIN_AND_PASSWORD_BASE64: ${{ parameters.LOGIN_AND_PASSWORD_BASE64 }}
+                    DIR_NAME: ${{ parameters.DIR_NAME }}
+                    PATH_TO_FILE: ${{ parameters.PATH_TO_FILE }}
+                    FILE_NAME_IN_NEXUS_REPO: ${{ parameters.FILE_NAME_IN_NEXUS_REPO }}
 
   - stage: UAT
     displayName: "Deploy to PROD"
@@ -55,3 +84,9 @@ stages:
               steps:
                 - template: ./template-cd-steps.yml
                   parameters:
+                    URL_TO_NEXUS_SERVER: ${{ parameters.URL_TO_NEXUS_SERVER }}
+                    NEXUS_REPOSITORY_NAME: ${{ parameters.NEXUS_REPOSITORY_NAME }}
+                    LOGIN_AND_PASSWORD_BASE64: ${{ parameters.LOGIN_AND_PASSWORD_BASE64 }}
+                    DIR_NAME: ${{ parameters.DIR_NAME }}
+                    PATH_TO_FILE: ${{ parameters.PATH_TO_FILE }}
+                    FILE_NAME_IN_NEXUS_REPO: ${{ parameters.FILE_NAME_IN_NEXUS_REPO }}
